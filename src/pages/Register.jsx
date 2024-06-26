@@ -3,14 +3,22 @@ import Form from 'react-bootstrap/Form';
 import { useFireBase } from '../context/Firebase';
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 const Register = () => {
   const fireBase = useFireBase();
   console.log(fireBase);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (fireBase.isLoggedIn) {
+      //// navigate to home
+      navigate('/');
+    }
+  }, [fireBase, navigate]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
