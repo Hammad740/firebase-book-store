@@ -1,6 +1,13 @@
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { createContext, useContext } from 'react';
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,17 +20,69 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
-//// create a context
-const FireBaseContext = createContext(null);
+let analytics;
+if (typeof window !== 'undefined') {
+  analytics = getAnalytics(app);
+}
 
-//// create a provider
+const fireBaseAuth = getAuth(app);
 
-export const FireBaseProvider = (props) => {
-  return <FireBaseContext.Provider>{props.children}</FireBaseContext.Provider>;
+// Sign up function
+export const signUp = async (email, password) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      fireBaseAuth,
+      email,
+      password
+    );
+    return userCredential;
+  } catch (error) {
+    console.error('Error signing up with email and password: ', error);
+    throw error;
+  }
 };
 
-//// use the context
+// Sign in function
+export const signIn = async (email, password) => {
+  try {
+    const user = await signInWithEmailAndPassword(
+      fireBaseAuth,
+      email,
+      password
+    );
+    return user;
+  } catch (error) {
+    console.error('Error signing in with email and password: ', error);
+    throw error;
+  }
+};
 
+// Google provider
+const googleProvider = new GoogleAuthProvider();
+
+// Google sign-in
+export const googleSignIn = async () => {
+  try {
+    const googleUser = await signInWithPopup(fireBaseAuth, googleProvider);
+    return googleUser;
+  } catch (error) {
+    console.error('Error signing in with Google: ', error);
+    throw error;
+  }
+};
+
+// Create a context
+const FireBaseContext = createContext(null);
+
+// Create a provider
+export const FireBaseProvider = ({ children }) => {
+  return (
+    <FireBaseContext.Provider value={{ signUp, signIn, googleSignIn }}>
+      {children}
+    </FireBaseContext.Provider>
+  );
+};
+
+// Use the context
 export const useFireBase = () => useContext(FireBaseContext);

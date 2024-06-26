@@ -5,7 +5,7 @@ import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState } from 'react';
 
-const Login = () => {
+const Register = () => {
   const fireBase = useFireBase();
   console.log(fireBase);
   const [email, setEmail] = useState('');
@@ -14,10 +14,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await fireBase.signIn(email, password);
-      toast.success('Signed In Successfully', {
+      await fireBase.signUp(email, password);
+      toast.success('Account Created Successfully', {
         position: 'top-right',
-        autoClose: 5000,
+        autoClose: 4000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -29,38 +29,9 @@ const Login = () => {
       setEmail('');
       setPassword('');
     } catch (error) {
-      toast.error('Failed to sign in: ' + error.message, {
+      toast.error('Failed to create account: ' + error.message, {
         position: 'top-right',
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'light',
-        transition: Slide,
-      });
-    }
-  };
-
-  const handleClick = async () => {
-    try {
-      await fireBase.googleSignIn();
-      toast.success('Signed In with Google Successfully', {
-        position: 'top-right',
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'light',
-        transition: Slide,
-      });
-    } catch (error) {
-      toast.error('Failed to sign in with Google: ' + error.message, {
-        position: 'top-right',
-        autoClose: 4000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -83,6 +54,9 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+          <Form.Text className="text-muted">
+            We'll never share your email with anyone else.
+          </Form.Text>
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="formBasicPassword">
@@ -98,16 +72,12 @@ const Login = () => {
           <Form.Check type="checkbox" label="Check me out" />
         </Form.Group>
         <Button variant="primary" type="submit">
-          Sign in
+          Create Account
         </Button>
       </Form>
-      <h3 className="mt-2 mb-2">OR</h3>
-      <Button variant="danger" type="button" onClick={handleClick}>
-        Sign in with Google
-      </Button>
       <ToastContainer />
     </div>
   );
 };
 
-export default Login;
+export default Register;
