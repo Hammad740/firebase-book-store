@@ -3,7 +3,7 @@ import { getAnalytics } from 'firebase/analytics';
 import { createContext, useContext } from 'react';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCNJTa5QYbEsLte7FnRajoLPFAQitz78Q0',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: 'fir-bookstore-86a54.firebaseapp.com',
   projectId: 'fir-bookstore-86a54',
   storageBucket: 'fir-bookstore-86a54.appspot.com',
