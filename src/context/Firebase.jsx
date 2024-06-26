@@ -1,3 +1,4 @@
+// src/context/Firebase.js
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { createContext, useContext } from 'react';
@@ -7,9 +8,12 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
+  signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
 import { useState, useEffect } from 'react';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import { addDoc, collection, getDocs, getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,9 +32,11 @@ if (typeof window !== 'undefined') {
   analytics = getAnalytics(app);
 }
 
+const storage = getStorage(app);
+const fireStore = getFirestore(app);
 const fireBaseAuth = getAuth(app);
 
-//// Sign up function
+// Sign up function
 export const signUp = async (email, password) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -45,7 +51,7 @@ export const signUp = async (email, password) => {
   }
 };
 
-//// Sign in function
+// Sign in function
 export const signIn = async (email, password) => {
   try {
     const user = await signInWithEmailAndPassword(
@@ -60,10 +66,10 @@ export const signIn = async (email, password) => {
   }
 };
 
-//// Google provider
+// Google provider
 const googleProvider = new GoogleAuthProvider();
 
-//// Google sign-in
+// Google sign-in
 export const googleSignIn = async () => {
   try {
     const googleUser = await signInWithPopup(fireBaseAuth, googleProvider);
@@ -74,10 +80,59 @@ export const googleSignIn = async () => {
   }
 };
 
-//// Create a context
+// Sign out function
+export const signOutUser = async () => {
+  try {
+    await signOut(fireBaseAuth);
+  } catch (error) {
+    console.error('Error signing out: ', error);
+    throw error;
+  }
+};
+
+// Add listing
+const handleCreateNewListing = async (
+  name,
+  price,
+  isbn,
+  coverPic,
+  currentUser
+) => {
+  try {
+    const imageRef = ref(
+      storage,
+      `uploads/images/${Date.now()}-${coverPic.name}`
+    );
+    const uploadResult = await uploadBytes(imageRef, coverPic);
+    return await addDoc(collection(fireStore, 'books'), {
+      name,
+      isbn,
+      price,
+      imageUrl: uploadResult.ref.fullPath,
+      user: currentUser.email, // Save the current user's email
+    });
+  } catch (error) {
+    console.log('Error', error);
+    console.log('Error', error.message);
+  }
+};
+
+// Get all books
+export const getListAllBooks = async () => {
+  try {
+    const booksCollection = collection(fireStore, 'books');
+    const bookSnapshot = await getDocs(booksCollection);
+    return bookSnapshot.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error('Error fetching books: ', error);
+    throw error;
+  }
+};
+
+// Create a context
 const FireBaseContext = createContext(null);
 
-//// Create a provider
+// Create a provider
 export const FireBaseProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -90,10 +145,20 @@ export const FireBaseProvider = ({ children }) => {
       }
     });
   }, []);
+
   const isLoggedIn = currentUser ? true : false;
   return (
     <FireBaseContext.Provider
-      value={{ signUp, signIn, googleSignIn, isLoggedIn }}
+      value={{
+        signUp,
+        signIn,
+        googleSignIn,
+        signOutUser,
+        isLoggedIn,
+        currentUser,
+        handleCreateNewListing,
+        getListAllBooks,
+      }}
     >
       {children}
     </FireBaseContext.Provider>
